@@ -81,7 +81,7 @@ var Printer = /*#__PURE__*/function (_IppServer) {
           return this.getJobs(req, res);
 
         default:
-          console.error("Unspported operation with id #".concat(req._body.operationId));
+          console.error("Unspported operation\n          ".concat(_ipp.operationIds.lookup(req._body.operationId), "\n          #").concat(req._body.operationId));
           return this.send(req._body, res, _ipp.statusCodes.SERVER_ERROR_OPERATION_NOT_SUPPORTED);
       }
     }
