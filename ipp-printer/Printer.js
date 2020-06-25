@@ -19,6 +19,12 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "d
 
 function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
+function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); if (enumerableOnly) symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; }); keys.push.apply(keys, symbols); } return keys; }
+
+function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; if (i % 2) { ownKeys(Object(source), true).forEach(function (key) { _defineProperty(target, key, source[key]); }); } else if (Object.getOwnPropertyDescriptors) { Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)); } else { ownKeys(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } } return target; }
+
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
@@ -77,11 +83,8 @@ var Printer = /*#__PURE__*/function (_IppServer) {
         case _ipp.operationIds.PRINT_JOB:
           return this.printJob(req, res);
 
-        case _ipp.operationIds.GET_JOBS:
-          return this.getJobs(req, res);
-
         default:
-          console.error("Unspported operation with id #".concat(req._body.operationId));
+          console.error("Unspported operation\n          ".concat(_ipp.operationIds.lookup(req._body.operationId), "\n          #").concat(req._body.operationId));
           return this.send(req._body, res, _ipp.statusCodes.SERVER_ERROR_OPERATION_NOT_SUPPORTED);
       }
     }
@@ -90,88 +93,115 @@ var Printer = /*#__PURE__*/function (_IppServer) {
     value: function getPrinterAttributes(reqBody, res) {
       /**
        * This are all required attributes.
+       * For easier access it is an object, in the actual response it will be mapped to an array
+       * where the current key will be converted to the name property
+       *
        * For futher information checkout https://tools.ietf.org/html/rfc8011#section-5.4
        * */
-      var attributes = [{
-        tag: _ipp.tags.URI,
-        name: 'printer-uri-supported',
-        value: this.uri
-      }, {
-        tag: _ipp.tags.KEYWORD,
-        name: 'uri-authentication-supported',
-        value: 'none'
-      }, {
-        tag: _ipp.tags.KEYWORD,
-        name: 'uri-security-supported',
-        value: 'none'
-      }, {
-        tag: _ipp.tags.NAME_WITHOUT_LANGUAGE,
-        name: 'printer-name',
-        value: this.name
-      }, {
-        tag: _ipp.tags.ENUM,
-        name: 'printer-state',
-        value: this.state
-      }, {
-        tag: _ipp.tags.KEYWORD,
-        name: 'printer-state-reasons',
-        value: 'none'
-      }, {
-        tag: _ipp.tags.KEYWORD,
-        name: 'ipp-versions-supported',
-        value: '1.1'
-      }, {
-        tag: _ipp.tags.ENUM,
-        name: 'operations-supported',
-        value: [_ipp.operationIds.PRINT_JOB, _ipp.operationIds.GET_JOBS, _ipp.operationIds.GET_PRINTER_ATTRIBUTES]
-      }, {
-        tag: _ipp.tags.CHARSET,
-        name: 'charset-configured',
-        value: 'utf-8'
-      }, {
-        tag: _ipp.tags.CHARSET,
-        name: 'charset-supported',
-        value: 'utf-8'
-      }, {
-        tag: _ipp.tags.NATURAL_LANGUAGE,
-        name: 'natural-language-configured',
-        value: 'en-us'
-      }, {
-        tag: _ipp.tags.NATURAL_LANGUAGE,
-        name: 'generated-natural-language-supported',
-        value: 'en-us'
-      }, {
-        tag: _ipp.tags.MIME_MEDIA_TYPE,
-        name: 'document-format-default',
-        value: 'application/postscript'
-      }, {
-        tag: _ipp.tags.MIME_MEDIA_TYPE,
-        name: 'document-format-supported',
-        value: ['application/postscript']
-      }, {
-        tag: _ipp.tags.BOOLEAN,
-        name: 'printer-is-accepting-jobs',
-        value: true
-      }, {
-        tag: _ipp.tags.INTEGER,
-        name: 'queued-job-count',
-        value: this.jobs.length
-      }, {
-        tag: _ipp.tags.KEYWORD,
-        name: 'pdl-override-supported',
-        value: 'not-attempted'
-      }, {
-        tag: _ipp.tags.INTEGER,
-        name: 'printer-up-time',
-        value: (0, _utils.timeBetween)(this.started, new Date().getTime())
-      }, {
-        tag: _ipp.tags.KEYWORD,
-        name: 'compression-supported',
-        value: ['none']
-      }];
+      var attributes = {
+        'printer-uri-supported': {
+          tag: _ipp.tags.URI,
+          value: this.uri
+        },
+        'uri-authentication-supported': {
+          tag: _ipp.tags.KEYWORD,
+          value: 'none'
+        },
+        'uri-security-supported': {
+          tag: _ipp.tags.KEYWORD,
+          value: 'none'
+        },
+        'printer-name': {
+          tag: _ipp.tags.NAME_WITHOUT_LANGUAGE,
+          value: this.name
+        },
+        'printer-state': {
+          tag: _ipp.tags.ENUM,
+          value: this.state
+        },
+        'printer-state-reasons': {
+          tag: _ipp.tags.KEYWORD,
+          value: 'none'
+        },
+        'ipp-versions-supported': {
+          tag: _ipp.tags.KEYWORD,
+          value: '1.1'
+        },
+        'operations-supported': {
+          tag: _ipp.tags.ENUM,
+          value: [_ipp.operationIds.PRINT_JOB, _ipp.operationIds.GET_PRINTER_ATTRIBUTES]
+        },
+        'charset-configured': {
+          tag: _ipp.tags.CHARSET,
+          value: 'utf-8'
+        },
+        'charset-supported': {
+          tag: _ipp.tags.CHARSET,
+          value: 'utf-8'
+        },
+        'natural-language-configured': {
+          tag: _ipp.tags.NATURAL_LANGUAGE,
+          value: 'en-us'
+        },
+        'generated-natural-language-supported': {
+          tag: _ipp.tags.NATURAL_LANGUAGE,
+          value: 'en-us'
+        },
+        'document-format-default': {
+          tag: _ipp.tags.MIME_MEDIA_TYPE,
+          value: 'application/postscript'
+        },
+        'document-format-supported': {
+          tag: _ipp.tags.MIME_MEDIA_TYPE,
+          value: ['application/postscript']
+        },
+        'printer-is-accepting-jobs': {
+          tag: _ipp.tags.BOOLEAN,
+          value: true
+        },
+        'queued-job-count': {
+          tag: _ipp.tags.INTEGER,
+          value: this.jobs.length
+        },
+        'pdl-override-supported': {
+          tag: _ipp.tags.KEYWORD,
+          value: 'not-attempted'
+        },
+        'printer-up-time': {
+          tag: _ipp.tags.INTEGER,
+          value: (0, _utils.timeBetween)(this.started, new Date().getTime())
+        },
+        'compression-supported': {
+          tag: _ipp.tags.KEYWORD,
+          value: ['none']
+        }
+      };
+      var requestedAttributes;
+      var groups = reqBody.groups;
+      if (!groups) throw new Error('Missing groups in get printer attributes request.');
+      groups.some(function (group) {
+        if (group.tag === _ipp.tags.OPERATION_ATTRIBUTES_TAG) {
+          group.attributes.some(function (attr) {
+            if (attr.name === 'requested-attributes') {
+              requestedAttributes = attr.value;
+              return true;
+            }
+          });
+        }
+      }); // if nothing is requested return all attributes
+
+      if (!requestedAttributes) requestedAttributes.concat(Object.keys(attributes));
       var group = {
         tag: _ipp.tags.PRINTER_ATTRIBUTES_TAG,
-        attributes: attributes
+        attributes: requestedAttributes.map(function (key) {
+          var val = attributes[key];
+          return !!val ? _objectSpread(_objectSpread({}, val), {}, {
+            name: key
+          }) : null;
+        }).filter(function (val) {
+          return !!val;
+        }) // filter out null values
+
       };
       this.send(reqBody, res, _ipp.statusCodes.SUCCESSFULL_OK, group);
     }

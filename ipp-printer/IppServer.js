@@ -13,6 +13,8 @@ var _util = require("util");
 
 var _events = require("events");
 
+var _debug = require("debug");
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 
 function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
@@ -52,7 +54,7 @@ var IppServer = /*#__PURE__*/function (_EventEmitter) {
     _this.server = _http["default"].createServer(_this.onRequest.bind(_assertThisInitialized(_this)));
 
     _this.server.listen(port, function () {
-      console.log("Server listening on ".concat(_this.uri));
+      _debug.debug.log("Server listening on ".concat(_this.uri));
     });
 
     return _this;
@@ -85,12 +87,11 @@ var IppServer = /*#__PURE__*/function (_EventEmitter) {
         var buffer = Buffer.concat(chunks);
         req._body = (0, _ipp.decode)(buffer);
         req._body.operationId = req._body.statusCodeOrOperationId;
-        delete req._body.statusCodeOrOperationId; // console.log(
-        //   `IPP/${req._body.version}
-        //   operation: ${operationIds.lookup(req._body.operationId)}
-        //   request: #${req._body.requestId}\n`,
-        //   inspect(req._body.groups, {depth: null})
-        // );
+        delete req._body.statusCodeOrOperationId;
+
+        _debug.debug.log("IPP/".concat(req._body.version, "\n        operation: ").concat(_ipp.operationIds.lookup(req._body.operationId), "\n        request: #").concat(req._body.requestId, "\n"), (0, _util.inspect)(req._body.groups, {
+          depth: null
+        }));
 
         _this2.router(req, res);
       });
@@ -137,7 +138,11 @@ var IppServer = /*#__PURE__*/function (_EventEmitter) {
           }]
         }]
       };
-      if (groups) respObj.groups = respObj.groups.concat(groups); // console.log(`Response to #${body.requestId}: \n`, inspect(respObj, {depth: null}));
+      if (groups) respObj.groups = respObj.groups.concat(groups);
+
+      _debug.debug.log("Response to #".concat(body.requestId, ": \n"), (0, _util.inspect)(respObj, {
+        depth: null
+      }));
 
       var resp = (0, _ipp.encode)(respObj);
       res.writeHead(200, {
