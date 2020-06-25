@@ -19,6 +19,7 @@
   },
   "homepage": "https://github.com/JohannesOster/nodejs-invoice-analyzer#readme",
   "dependencies": {
+    "esc-pos-encoder": "^1.2.0",
     "nodemon": "^2.0.4"
   }
 }
