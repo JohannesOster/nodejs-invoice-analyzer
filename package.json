@@ -4,6 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "start": "node index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -16,5 +17,8 @@
   "bugs": {
     "url": "https://github.com/JohannesOster/nodejs-printer-interceptor/issues"
   },
-  "homepage": "https://github.com/JohannesOster/nodejs-printer-interceptor#readme"
+  "homepage": "https://github.com/JohannesOster/nodejs-printer-interceptor#readme",
+  "dependencies": {
+    "usb": "^1.6.3"
+  }
 }
